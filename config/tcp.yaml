@@ -1,0 +1,64 @@
+apiVersion: kamaji.clastix.io/v1alpha1
+kind: TenantControlPlane
+metadata:
+  name: cncf-zurich
+  namespace: default
+spec:
+  controlPlane:
+    deployment:
+      replicas: 3
+      additionalMetadata:
+        labels:
+          tenant.clastix.io: cncf-zurich
+      extraArgs:
+        apiServer: []
+        controllerManager: []
+        scheduler: []
+      resources:
+        apiServer:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits: {}
+        controllerManager:
+          requests:
+            cpu: 125m
+            memory: 256Mi
+          limits: {}
+        scheduler:
+          requests:
+            cpu: 125m
+            memory: 256Mi
+          limits: {} 
+    service:
+      additionalMetadata:
+        labels:
+          tenant.clastix.io: cncf-zurich
+        annotations:
+          service.beta.kubernetes.io/azure-dns-label-name: cncf-zurich
+      serviceType: LoadBalancer
+  kubernetes:
+    version: v1.25.0
+    kubelet:
+      cgroupfs: systemd
+    admissionControllers:
+      - ResourceQuota
+      - LimitRanger
+  networkProfile:
+    port: 6443
+    certSANs:
+    - cncf-zurich.westeurope.cloudapp.azure.com
+    serviceCidr: 10.96.0.0/16
+    podCidr: 10.36.0.0/16
+    dnsServiceIPs:
+    - 10.96.0.10
+  addons:
+    coreDNS: {}
+    kubeProxy: {}
+    konnectivity:
+      proxyPort: 8132
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits: {}
